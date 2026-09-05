@@ -23,13 +23,15 @@ public class menu{
 
 			switch(opcao){
 				case "1":
-					System.out.println("Chamar classe lista de usuários");
+					this.listarUsers();
 					break;
 				case "2":
 					System.out.println("Chamar metodos solicitar conversa");
+					//String alvo = scanner.nextLine();
+					//sessoes.solicitarConversa(alvo);
 					break;
 				case "3":
-					System.out.println("Chamar classe listar grupos");
+					this.listarGroups();
 					break;
 				case "4":
 					System.out.println("Chamar metodo criar novo grupo");
@@ -42,5 +44,14 @@ public class menu{
 					break;
 			}
 		}
+	}
+	public void listarUsers(){
+		System.out.println("Chamar classe lista de usuários");
+		return;
+	}
+
+	public void listarGroups(){
+		System.out.println("Chamar classe listar grupos");
+		return;
 	}
 }

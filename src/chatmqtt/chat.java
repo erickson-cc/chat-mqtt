@@ -27,6 +27,10 @@ public class chat {
 			MqttConnectOptions connOpts = new MqttConnectOptions();
 			//Sets whether the client and server should remember state across restarts and reconnects.
 			connOpts.setCleanSession(false);// Retém mensagens enviadas para usuarios offline
+			//controller MQTT = new controller(broker userId);
+			//users gerenciadorUsuarios = new users();
+			//session sessoes = new session(MQTT, userId);
+
 
 			System.out.println("Conectando ao broker...");
 			client.connect(connOpts);
@@ -43,6 +47,7 @@ public class chat {
 			client.subscribe(topicoControleUser);
 			System.out.println(userId + " inscrito no tópico de controle: " + topicoControleUser);
 
+			//menu menu = new menu(gerenciadorUsuarios, sessoes, MQTT);// ?
 			menu menu = new menu();// ?
 			menu.exibir();
 		}
