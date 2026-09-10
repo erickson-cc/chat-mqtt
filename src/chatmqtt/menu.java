@@ -1,16 +1,22 @@
 package chatmqtt;
+
 import java.util.Scanner;
 
-public class menu{
+public class menu {
 	private Scanner scanner;
+	private users gerenciadorUsuarios;
 
-	public menu(){
+	public menu(users usuarios) {
 		this.scanner = new Scanner(System.in);
+		this.gerenciadorUsuarios = usuarios;
+	}
+
+	public menu() {
 	}
 
 	public void exibir() {
 		boolean onscreen = true;
-		while(onscreen){
+		while (onscreen) {
 			System.out.println("1. Listar usuários");
 			System.out.println("2. Solicitar conversa");
 			System.out.println("3. Listar grupos");
@@ -21,14 +27,14 @@ public class menu{
 			System.out.print("Escolha uma opção: ");
 			String opcao = scanner.nextLine();
 
-			switch(opcao){
+			switch (opcao) {
 				case "1":
-					this.listarUsers();
+					gerenciadorUsuarios.listarUsers();
 					break;
 				case "2":
 					System.out.println("Chamar metodos solicitar conversa");
-					//String alvo = scanner.nextLine();
-					//sessoes.solicitarConversa(alvo);
+					// String alvo = scanner.nextLine();
+					// sessoes.solicitarConversa(alvo);
 					break;
 				case "3":
 					this.listarGroups();
@@ -41,16 +47,13 @@ public class menu{
 					break;
 				case "0":
 					System.out.println("Dar um exit da classe anterior");
+					onscreen = false;
 					break;
 			}
 		}
 	}
-	public void listarUsers(){
-		System.out.println("Chamar classe lista de usuários");
-		return;
-	}
 
-	public void listarGroups(){
+	public void listarGroups() {
 		System.out.println("Chamar classe listar grupos");
 		return;
 	}
