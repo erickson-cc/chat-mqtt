@@ -24,7 +24,8 @@ public class chat {
 
 			users gerenciadorUsuarios = new users();
 			controller mqttController = new controller(broker, userId, gerenciadorUsuarios);
-			mqttController.assinarTopico("USERS");
+			//mqttController.assinarTopico("USERS");
+			mqttController.assinarTopico("USERS/#");// subtópcios de cada usuario
 			String topicoControleUser = userId + "_Control";
 			mqttController.assinarTopico(topicoControleUser);
 			System.out.println(userId + " inscrito no tópico de controle: " + topicoControleUser);

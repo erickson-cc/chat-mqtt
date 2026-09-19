@@ -10,7 +10,7 @@ public class controller {
 	private MqttClient client;
 	private String userId;
 
-	public controller(String broker, String userId, users gerenciadorUsuarios) throws MqttException{
+	public controller(String broker, String userId, users gerenciadorUsuarios) throws MqttException {
 		this.userId = userId;
 		MemoryPersistence persistence = new MemoryPersistence();
 		this.client = new MqttClient(broker, userId, persistence);
@@ -31,7 +31,11 @@ public class controller {
 			public void messageArrived(String topic, MqttMessage message) throws Exception {
 				String payload = new String(message.getPayload());
 
-				if (topic.equals("USERS")) {
+				// if (topic.equals("USERS")) {
+				// gerenciadorUsuarios.atualizarStatus(payload);
+				// }
+				if (topic.startsWith("USERS/")) {// Criar subtópicos para evitar o problema de
+									// Guardar apenas uma mensagem
 					gerenciadorUsuarios.atualizarStatus(payload);
 				}
 			}
@@ -42,18 +46,19 @@ public class controller {
 	}
 
 	public void assinarTopico(String topico) throws MqttException {
-		client.subscribe(topico); 
+		client.subscribe(topico);
 	}
 
-	public void publicarStatus(String status) throws MqttException{
+	public void publicarStatus(String status) throws MqttException {
 		String messageStatus = userId + ":" + status;
 		MqttMessage statusUser = new MqttMessage(messageStatus.getBytes());
 		statusUser.setQos(1);
 		statusUser.setRetained(true);// para quem logar depois
-		client.publish("USERS", statusUser);
+		// client.publish("USERS", statusUser);
+		client.publish("USERS/" + userId, statusUser); // Publica no subtópico
 	}
 
-	public void desconectar() throws MqttException{
-		client.disconnect(); 
+	public void desconectar() throws MqttException {
+		client.disconnect();
 	}
 }
