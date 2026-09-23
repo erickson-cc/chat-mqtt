@@ -13,7 +13,7 @@ public class controller {
 
 	public controller(String broker, String userId, users gerenciadorUsuarios, session sessoes) throws MqttException {
 		this.userId = userId;
-		this.userTopicoControle = userid+"_Control";
+		this.userTopicoControle = userId+"_Control";
 		MemoryPersistence persistence = new MemoryPersistence();
 		this.client = new MqttClient(broker, userId, persistence);
 		MqttConnectOptions connOpts = new MqttConnectOptions();
@@ -43,7 +43,7 @@ public class controller {
 					gerenciadorUsuarios.atualizarStatus(payload);
 				}
 				// Ler mensagens que chegam em user_Control
-				else if(topic.equals(topicoControleUser)){
+				else if(topic.equals(userTopicoControle)){
 					if(payload.startsWith("REQ:")){
 						String remetente = payload.split(":")[1];
 						//String dataehora = payload.split(" ")[0];
@@ -78,5 +78,11 @@ public class controller {
 
 	public void desconectar() throws MqttException {
 		client.disconnect();
+	}
+
+	public void enviarMensagem(String topicoDestino, String mensagem) throws MqttException{
+		MqttMessage msg = new MqttMessage(mensagem.getBytes());
+		msg.setQos(1);
+		client.publish(topicoDestino,msg);
 	}
 }

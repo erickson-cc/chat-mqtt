@@ -23,7 +23,8 @@ public class chat {
 			// session sessoes = new session(MQTT, userId);
 
 			users gerenciadorUsuarios = new users();
-			controller mqttController = new controller(broker, userId, gerenciadorUsuarios);
+			session sessoes = new session();
+			controller mqttController = new controller(broker, userId, gerenciadorUsuarios, sessoes);
 			//mqttController.assinarTopico("USERS");
 			mqttController.assinarTopico("USERS/#");// subtópcios de cada usuario
 			String topicoControleUser = userId + "_Control";
@@ -32,7 +33,7 @@ public class chat {
 			mqttController.publicarStatus("ONLINE");
 
 			// menu menu = new menu(gerenciadorUsuarios, sessoes, MQTT);// ?
-			menu menu = new menu(gerenciadorUsuarios);// ?
+			menu menu = new menu(gerenciadorUsuarios, sessoes, mqttController, userId);// ?
 			menu.exibir();// fica num loop
 
 			// A partir daqui o usuário sai do sistema

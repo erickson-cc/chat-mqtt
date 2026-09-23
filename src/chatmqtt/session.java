@@ -16,7 +16,7 @@ public class session {
 
 	public void adicionarSolicitacao(String idSol) {
 		solicitacoesPendentes.add(idSol);
-		System.out.println("\r\n[AVISO] Nova solicitação de conversa de: " + idSol);
+		System.out.println("\r\n[NOTIFICAÇÃO] Nova solicitação de conversa de: " + idSol);
 		System.out.print("Escolha uma opção: ");
 	}
 
