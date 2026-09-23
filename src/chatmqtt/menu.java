@@ -6,19 +6,19 @@ public class menu {
 	private Scanner scanner;
 	private users gerenciadorUsuarios;
 
-	public menu(users usuarios) {
+	public menu(users usuarios, session sessoes, controller mqttController, String userId) {
 		this.scanner = new Scanner(System.in);
 		this.gerenciadorUsuarios = usuarios;
-	}
-
-	public menu() {
+		this.sessoes = sessoes;
+		this.mqttController = mqttController;
+		this.userId = userId;
 	}
 
 	public void exibir() {
 		boolean onscreen = true;
 		while (onscreen) {
 			System.out.println("1. Listar usuários");
-			System.out.println("2. Solicitar conversa");
+			System.out.println("2. Solicitar/Aceitar conversa");
 			System.out.println("3. Listar grupos");
 			System.out.println("4. Criar novo grupo");
 			System.out.println("5. Histórico"); // Tem mais coisa aqui, abrir outro menu
@@ -32,7 +32,7 @@ public class menu {
 					gerenciadorUsuarios.listarUsers();
 					break;
 				case "2":
-					System.out.println("Chamar metodos solicitar conversa");
+					subMenuConversas();
 					// String alvo = scanner.nextLine();
 					// sessoes.solicitarConversa(alvo);
 					break;
@@ -56,5 +56,14 @@ public class menu {
 	public void listarGroups() {
 		System.out.println("Chamar classe listar grupos");
 		return;
+	}
+
+	private void subMenuConversas(){
+		sessoes.listarPendentes();
+		System.out.println("1. Solicitar nova conversa");
+		System.out.println("2. Aceitar solicitação pendente");
+		System.out.println("0. Voltar");
+		System.out.print("Escolha: ");
+		// parei aqui
 	}
 }
