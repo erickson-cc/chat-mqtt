@@ -40,9 +40,9 @@ public class chat {
 			System.out.println("Encerrando a conexão...");
 			mqttController.publicarStatus("OFFLINE");
 			mqttController.desconectar();
-		} catch (MqttException me) {
-			System.out.println("Erro MQTT: " + me.getMessage());
-			me.printStackTrace();
+		} catch (MqttException e) {
+			System.out.println("Erro MQTT: " + e.getMessage());
+			e.printStackTrace();
 		}
 		scanner.close();
 

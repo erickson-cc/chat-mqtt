@@ -6,6 +6,7 @@ import java.util.Set;
 
 
 public class session {
+	// Gerencia as requisições de conversas
 	private Set<String> solicitacoesPendentes;
 
 	public session() {
