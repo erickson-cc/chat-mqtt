@@ -22,7 +22,7 @@ public class menu {
 		boolean onscreen = true;
 		while (onscreen) {
 			System.out.println("1. Listar usuários");
-			System.out.println("2. Solicitar/Aceitar conversa");
+			System.out.println("2. Conversas");
 			System.out.println("3. Listar grupos");
 			System.out.println("4. Criar novo grupo");
 			System.out.println("5. Histórico"); // Tem mais coisa aqui, abrir outro menu
@@ -66,6 +66,8 @@ public class menu {
 		sessoes.listarPendentes();
 		System.out.println("1. Solicitar nova conversa");
 		System.out.println("2. Aceitar solicitação pendente");
+		System.out.println("3. Recusar solicitação pendente");
+		System.out.println("4. Mostrar registros de solicitações");
 		System.out.println("0. Voltar");
 		System.out.print("Escolha: ");
 
@@ -82,6 +84,7 @@ public class menu {
 				else{
 					// Envia a mensagem REQ para o tópçico de controle
 					mqttController.enviarMensagem(destinatario + "_Control", "REQ:" + userId);
+					sessoes.registrarLogSolicitacoes("SOLICITADO",userId,destinatario,null);
 					System.out.println("Solicitação enviada para "+destinatario);
 				}
 
@@ -93,8 +96,9 @@ public class menu {
 					long timestamp = System.currentTimeMillis();
 					String topicoDaSessao = solicitante + "_" + userId + "_" + timestamp;
 					// Enviar mensagem ACCEPT para o tópico de controle
-					mqttController.enviarMensagem(solicitante+"_Control", "ACCEPT:"+topicoDaSessao);
+					mqttController.enviarMensagem(solicitante+"_Control", "ACCEPT:"+userId+":"+topicoDaSessao);
 					mqttController.assinarTopico(topicoDaSessao);
+					sessoes.registrarLogSolicitacoes("ACEITO", solicitante, userId, topicoDaSessao);
 					sessoes.removerSolicitacao(solicitante);
 					System.out.println("Conversa estabelecida no tópico: "+topicoDaSessao);
 				}
@@ -102,6 +106,24 @@ public class menu {
 					System.out.println("Não existe solicitação pendente para esse usuário");
 				}
 			}
+			else if (subOpcao.equals("3")){
+				System.out.println("Digite o ID do usuário que deseja recusar a conversa");
+				String solicitante = scanner.nextLine();
+				if(sessoes.possuiSolicitacao(solicitante)){
+					// Enviar mensagem REJECT para o tópico de controle
+					mqttController.enviarMensagem(solicitante+"_Control", "REJECT:"+userId);
+					sessoes.registrarLogSolicitacoes("RECUSADO",solicitante, userId, null);
+					sessoes.removerSolicitacao(solicitante);
+					System.out.println("Solicitação de " + solicitante +" recusada");
+				}
+				else{
+					System.out.println("Não existe solicitação pendente para esse usuário");
+				}
+			}
+			else if (subOpcao.equals("4")){// Mostrar logSolicitacoes
+				sessoes.listarLogSolicitacoes();
+			}
+				
 		}
 		catch (MqttException e){
 			System.out.println("Erro: "+e.getMessage());

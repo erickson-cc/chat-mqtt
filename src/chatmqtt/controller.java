@@ -24,6 +24,9 @@ public class controller {
 			// called when the connection to the server is lost.
 			public void connectionLost(Throwable cause) {
 				System.out.println("\nError MQTT: CoonnectionLost\nOutro usuário logou com seu ID");
+				// PARA CORRIGIR POSTERIORMENTE
+				// A mensagem "Outro usuario logou com seu ID" aparece para qualquer
+				// cas de perda de conexão. Criar ifs que interpretam os erros do mqtt
 				System.exit(1);
 			}
 
@@ -48,10 +51,22 @@ public class controller {
 						String remetente = payload.split(":")[1];
 						//String dataehora = payload.split(" ")[0];
 						sessoes.adicionarSolicitacao(remetente);
+						sessoes.registrarLogSolicitacoes("SOLICITADO", remetente, userId, null);
 					}
 					else if(payload.startsWith("ACCEPT:")){
-						String topicoSessao = payload.split(":")[1];
-						System.out.println("\r\nSessão iniciada. O usuário aceitou sua solicitação.\nTópico: "+topicoSessao);
+						String mensagemPartes[] = payload.split(":");
+						String destinatario = mensagemPartes[1];
+						String topicoSessao = mensagemPartes[2];
+
+						sessoes.registrarLogSolicitacoes("ACEITO", userId, destinatario, topicoSessao);
+						System.out.println("\r\n Canal iniciado. O usuário aceitou sua solicitação.\nTópico: "+topicoSessao);
+						System.out.println("Escolha uma opção:");
+					}
+					else if(payload.startsWith("REJECT:")){
+						String destinatario = payload.split(":")[1];
+						sessoes.registrarLogSolicitacoes("RECUSADO", userId, destinatario, null);
+
+						System.out.println("\r\nAviso. O usuário "+destinatario+" recusou sua solicitação.");
 						System.out.println("Escolha uma opção:");
 					}
 
