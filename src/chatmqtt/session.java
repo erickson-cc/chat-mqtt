@@ -7,18 +7,23 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;//Grupos
+import java.util.Map;
 
 
 public class session {
 	// Gerencia as requisições de conversas
 	private Set<String> solicitacoesPendentes;
 	private List<String> logSolicitacoes;
-	private DateTimeFormatter formatter;
+	private DateTimeFormatter formatter;// para a data da conversa
+	// Gerencia as requisições de participação em grupos
+	private Map<String, String> solicitacoesGrupo;
 
 	public session() {
 		this.solicitacoesPendentes = new HashSet<>();
 		this.logSolicitacoes = new ArrayList<>();
 		this.formatter = DateTimeFormatter.ofPattern("MMM dd HH:mm", Locale.ENGLISH);// para o time do log
+		this.solicitacoesGrupo = new HashMap<>();
 
 	}
 
@@ -70,5 +75,37 @@ public class session {
 			log += " ("+canal+")";
 		}
 		logSolicitacoes.add(log);
+	}
+
+	// Métodos de gerenciamento de grupos
+	public void solicitarParticipacao(String membro, String grupo){
+		solicitacoesGrupo.put(membro,grupo);
+		System.out.println("\r\n[NOTIFICAÇÃO] Nova solicitação de participação ao grupo '"+grupo+"' vindo de "+membro );
+		System.out.print("Escolha uma opção: ");
+	}
+
+	public void removerSolicitacaoGrupo(String membro){
+		solicitacoesGrupo.remove(membro);
+	}
+	
+	public boolean possuiSolicitacaoGrupo(String membro){
+		return solicitacoesGrupo.containsKey(membro);
+	}
+
+	public String getGrupoSolicitado(String membro){
+		// Trocar a palavra "membro" por "solicitante"
+		// nesses métodos de grupo
+		return solicitacoesGrupo.get(membro);
+	}
+	public void listarSolicitacoesPendentesGrupo(){
+		System.out.println("Solicitações de participação Pendentes:");
+		if (solicitacoesGrupo.isEmpty()){
+			System.out.println("Nenhuma solicitação no momento");
+			return;
+		}
+
+		for (Map.Entry<String, String> entry : solicitacoesGrupo.entrySet()){
+			System.out.println("Usuário '"+entry.getKey()+"' solicitou participação no grupo '"+entry.getValue()+"'");
+		}
 	}
 }

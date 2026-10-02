@@ -24,16 +24,17 @@ public class chat {
 
 			users gerenciadorUsuarios = new users();
 			session sessoes = new session();
-			controller mqttController = new controller(broker, userId, gerenciadorUsuarios, sessoes);
+			groups gerenciadorGrupos = new groups();
+			controller mqttController = new controller(broker, userId, gerenciadorUsuarios, sessoes, gerenciadorGrupos);
 			//mqttController.assinarTopico("USERS");
 			mqttController.assinarTopico("USERS/#");// subtópcios de cada usuario
+			mqttController.assinarTopico("GROUPS/#");
 			String topicoControleUser = userId + "_Control";
 			mqttController.assinarTopico(topicoControleUser);
 			System.out.println(userId + " inscrito no tópico de controle: " + topicoControleUser);
 			mqttController.publicarStatus("ONLINE");
 
-			// menu menu = new menu(gerenciadorUsuarios, sessoes, MQTT);// ?
-			menu menu = new menu(gerenciadorUsuarios, sessoes, mqttController, userId);// ?
+			menu menu = new menu(gerenciadorUsuarios, sessoes, mqttController, userId, gerenciadorGrupos);// ?
 			menu.exibir();// fica num loop
 
 			// A partir daqui o usuário sai do sistema

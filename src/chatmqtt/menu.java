@@ -8,14 +8,16 @@ public class menu {
 	private users gerenciadorUsuarios;
 	private session sessoes;
 	private controller mqttController;
+	private groups gerenciadorGrupos;
 	private String userId;
 
-	public menu(users usuarios, session sessoes, controller mqttController, String userId) {
+	public menu(users usuarios, session sessoes, controller mqttController, String userId, groups gerenciadorGrupos) {
 		this.scanner = new Scanner(System.in);
 		this.gerenciadorUsuarios = usuarios;
 		this.sessoes = sessoes;
 		this.mqttController = mqttController;
 		this.userId = userId;
+		this.gerenciadorGrupos = gerenciadorGrupos;
 	}
 
 	public void exibir() {
@@ -23,9 +25,8 @@ public class menu {
 		while (onscreen) {
 			System.out.println("1. Listar usuários");
 			System.out.println("2. Conversas");
-			System.out.println("3. Listar grupos");
-			System.out.println("4. Criar novo grupo");
-			System.out.println("5. Histórico"); // Tem mais coisa aqui, abrir outro menu
+			System.out.println("3. Grupos");
+			System.out.println("4. Histórico"); // Tem mais coisa aqui, abrir outro menu
 			System.out.println("0. Sair");
 
 			System.out.print("Escolha uma opção: ");
@@ -41,10 +42,11 @@ public class menu {
 					// sessoes.solicitarConversa(alvo);
 					break;
 				case "3":
-					this.listarGroups();
+					//gerenciadorGrupos.listarGrupos();
+					subMenuGrupos();
 					break;
 				case "4":
-					System.out.println("Chamar metodo criar novo grupo");
+					System.out.print("Chamar classe histórico");
 					break;
 				case "5":
 					System.out.println("Chamar classe histórico");
@@ -55,11 +57,6 @@ public class menu {
 					break;
 			}
 		}
-	}
-
-	public void listarGroups() {
-		System.out.println("Chamar classe listar grupos");
-		return;
 	}
 
 	private void subMenuConversas(){
@@ -127,6 +124,84 @@ public class menu {
 		}
 		catch (MqttException e){
 			System.out.println("Erro: "+e.getMessage());
+		}
+	}
+
+	private void subMenuGrupos() {
+		System.out.println("1. Listar grupos cadastrados");
+		System.out.println("2. Criar novo grupo");
+		System.out.println("3. Solicitar entrada num grupo");
+		System.out.println("4. Gerenciar pedidos de entrada");
+		System.out.println("0. Voltar");
+		System.out.print("Escolha: ");
+
+		String sub = scanner.nextLine();
+
+		try{
+			if (sub.equals("1")){
+				gerenciadorGrupos.listarGrupos();
+			}
+			else if (sub.equals("2")){
+				System.out.print("Digite o nome do novo grupo: ");
+				String nomeGrupo = scanner.nextLine();
+				if (gerenciadorGrupos.esseGrupoExiste(nomeGrupo)){
+					System.out.println("Erro: esse grupo já existe");
+				}
+				else{
+					//try{
+					mqttController.enviarMensagemRetida("GROUPS/" + nomeGrupo +"/"+userId, "LEADER");
+					System.out.println("Grupo '"+nomeGrupo+"' criado com sucesso.");
+					//} catch (MqttException e) {
+					//	System.out.println("Erro ao criar o grupo" + e.getMessage());
+				}
+			}
+			else if (sub.equals("3")){
+				System.out.print("Digite o nome do grupo que deseja entrar: ");
+				String nomeGrupo= scanner.nextLine();
+				if (!gerenciadorGrupos.esseGrupoExiste(nomeGrupo)){
+					System.out.println("Erro: Esse grupo não existe");
+				}
+				else{
+					String liderId = gerenciadorGrupos.retornaLider(nomeGrupo);
+					if (liderId.equals(userId)){
+						System.out.println("Você ja é o líder desse grupo");
+					}
+					else{
+						//Envia GROUP_REQ:NomeGRUPO:userId para o canal do lider
+						mqttController.enviarMensagem(liderId+"_Control", "GROUP_REQ:"+nomeGrupo+":"+userId);
+						System.out.println("Solicitação enviada para o líder: "+liderId);
+					}
+				}
+
+			}
+			else if (sub.equals("4")){
+				sessoes.listarSolicitacoesPendentesGrupo();
+				System.out.print("\nDigite o ID do usuário solicitante: ");
+				String solicitante = scanner.nextLine();
+
+				if (sessoes.possuiSolicitacaoGrupo(solicitante)){
+					String grupoAlvo = sessoes.getGrupoSolicitado(solicitante);
+					System.out.print("Deseja (A)ceitar ou (R)ecusar?: ");
+					String acao = scanner.nextLine().toUpperCase();
+					if (acao.equals("A")){
+						mqttController.enviarMensagemRetida("GROUPS/"+ grupoAlvo+"/"+solicitante,"MEMBER");
+						mqttController.enviarMensagem(solicitante+"_Control","GROUP_ACCEPT:"+grupoAlvo);
+						System.out.println("Usuário "+solicitante+" adicionado ao grupo");
+						sessoes.removerSolicitacaoGrupo(solicitante);
+					}
+					else if (acao.equals("R")){
+						mqttController.enviarMensagem(solicitante+"_Control","GROUP_REJECT:"+grupoAlvo);
+						System.out.println("Solicitação recusada");
+						sessoes.removerSolicitacaoGrupo(solicitante);
+					}
+				}
+
+			}
+			//else if (sub.equals("0")){
+			//}
+		}
+		catch (MqttException e) {
+			System.out.println("Erro no gerenciamento de grupos");
 		}
 	}
 }
