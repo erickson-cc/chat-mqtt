@@ -18,12 +18,14 @@ public class session {
 	private DateTimeFormatter formatter;// para a data da conversa
 	// Gerencia as requisições de participação em grupos
 	private Map<String, String> solicitacoesGrupo;
+	private Map<String, String> conversasAtivas;
 
 	public session() {
 		this.solicitacoesPendentes = new HashSet<>();
 		this.logSolicitacoes = new ArrayList<>();
 		this.formatter = DateTimeFormatter.ofPattern("MMM dd HH:mm", Locale.ENGLISH);// para o time do log
 		this.solicitacoesGrupo = new HashMap<>();
+		this.conversasAtivas = new HashMap<>();
 
 	}
 
@@ -106,6 +108,25 @@ public class session {
 
 		for (Map.Entry<String, String> entry : solicitacoesGrupo.entrySet()){
 			System.out.println("Usuário '"+entry.getKey()+"' solicitou participação no grupo '"+entry.getValue()+"'");
+		}
+	}
+
+	// Métodos de gerenciamento de conversas
+	public void adicionarConversa(String utilizador, String topico) {
+		conversasAtivas.put(utilizador, topico);
+	}
+	public String getTopicoConversa(String utilizador) {
+		return conversasAtivas.get(utilizador);
+	}
+	public void listarConversasAtivas() {
+		System.out.println("Conversas Ativas: ");
+		if (conversasAtivas.isEmpty()) {
+			System.out.println("Nenhuma conversa.");
+		}
+		else{
+			for(String user : conversasAtivas.keySet()){
+				System.out.println("- " + user);
+			}
 		}
 	}
 }

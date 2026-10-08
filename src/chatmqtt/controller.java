@@ -63,6 +63,9 @@ public class controller {
 						String topicoSessao = mensagemPartes[2];
 
 						sessoes.registrarLogSolicitacoes("ACEITO", userId, destinatario, topicoSessao);
+						sessoes.adicionarConversa(destinatario,topicoSessao);
+						client.subscribe(topicoSessao);
+
 						System.out.println("\r\n Canal iniciado. O usuário aceitou sua solicitação.\nTópico: "+topicoSessao);
 						System.out.println("Escolha uma opção:");
 					}
@@ -91,6 +94,15 @@ public class controller {
 						System.out.println("Escolha uma opção:");
 					}
 
+				}
+				else if (topic.contains("_"+userId+"_")&& !topic.endsWith("_Control")){
+					// Não é USERS nem GROUPS nem _Control, logo é chat privado
+					String remetente = payload.split(":")[0];
+
+					if (!remetente.equals(userId)){ // não imprime mensagens que o user enviou
+						System.out.println("\r\nMensagem de " + remetente +":" +payload.substring(remetente.length()+2));
+						System.out.print("Escolha uma opção:");
+					}
 				}
 			}
 		});

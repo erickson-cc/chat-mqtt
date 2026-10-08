@@ -38,8 +38,6 @@ public class menu {
 					break;
 				case "2":
 					subMenuConversas();
-					// String alvo = scanner.nextLine();
-					// sessoes.solicitarConversa(alvo);
 					break;
 				case "3":
 					//gerenciadorGrupos.listarGrupos();
@@ -65,6 +63,7 @@ public class menu {
 		System.out.println("2. Aceitar solicitação pendente");
 		System.out.println("3. Recusar solicitação pendente");
 		System.out.println("4. Mostrar registros de solicitações");
+		System.out.println("5. Entrar numa conversa ativa");
 		System.out.println("0. Voltar");
 		System.out.print("Escolha: ");
 
@@ -95,6 +94,7 @@ public class menu {
 					// Enviar mensagem ACCEPT para o tópico de controle
 					mqttController.enviarMensagem(solicitante+"_Control", "ACCEPT:"+userId+":"+topicoDaSessao);
 					mqttController.assinarTopico(topicoDaSessao);
+					sessoes.adicionarConversa(solicitante, topicoDaSessao); // Guarda o canal 
 					sessoes.registrarLogSolicitacoes("ACEITO", solicitante, userId, topicoDaSessao);
 					sessoes.removerSolicitacao(solicitante);
 					System.out.println("Conversa estabelecida no tópico: "+topicoDaSessao);
@@ -120,7 +120,34 @@ public class menu {
 			else if (subOpcao.equals("4")){// Mostrar logSolicitacoes
 				sessoes.listarLogSolicitacoes();
 			}
-				
+			else if (subOpcao.equals("5")){ // Modo Chat
+				sessoes.listarConversasAtivas();
+				System.out.print("Digite o ID do utilizador com quem deseja conversar: ");
+				String usuarioChat = scanner.nextLine();
+				String topicoChat =  sessoes.getTopicoConversa(usuarioChat);
+
+				if(topicoChat == null){
+					System.out.println("Não existe conversa ativa com esse usuário.");
+				}
+				else {
+					System.out.println("----------Conversa com: " + usuarioChat);
+					System.out.println("          nome do canal: "+ topicoChat);
+					System.out.println("\n Digite '/sair' para sair");
+					
+					boolean onChat = true;
+					while (onChat) {
+						String texto = scanner.nextLine();
+
+						if (texto.equals("/sair")) {
+							onChat = false;
+							System.out.println("_______________________________________________");
+						}else{
+							String mensagemChat = "["+userId+"]: "+ texto;
+							mqttController.enviarMensagem(topicoChat, mensagemChat);
+						}
+					}
+				}
+			}
 		}
 		catch (MqttException e){
 			System.out.println("Erro: "+e.getMessage());
