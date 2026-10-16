@@ -29,7 +29,7 @@ public class menu {
 			System.out.println("4. Histórico"); // Tem mais coisa aqui, abrir outro menu
 			System.out.println("0. Sair");
 
-			System.out.print("Escolha uma opção: ");
+			System.out.print(">> ");
 			String opcao = scanner.nextLine();
 
 			switch (opcao) {
@@ -132,16 +132,37 @@ public class menu {
 				else {
 					System.out.println("----------Conversa com: " + usuarioChat);
 					System.out.println("          nome do canal: "+ topicoChat);
-					System.out.println("\n Digite '/sair' para sair");
+					System.out.println("\n Digite '/sair' para voltar ao menu ou '/encerrar' para fechar a conversa permanentemente");
+					sessoes.setSalaAtiva(topicoChat);
+					sessoes.imprimirHistorico(topicoChat);
 					
 					boolean onChat = true;
 					while (onChat) {
 						String texto = scanner.nextLine();
+						if (sessoes.getTopicoConversa(usuarioChat) == null){
+							// Se o outro usuario encerra a conversa com a tela aberta
+							onChat = false;
+							sessoes.setSalaAtiva(null);
+							System.out.println("_______________________________________________");
+							break;
+						}
 
 						if (texto.equals("/sair")) {
 							onChat = false;
+							sessoes.setSalaAtiva(null);
 							System.out.println("_______________________________________________");
-						}else{
+						}
+						else if(texto.equals("/encerrar")){
+							onChat = false;
+							sessoes.setSalaAtiva(null);
+							// Avisa o outro usuario que a conversa foi encerrada.
+							mqttController.enviarMensagem(topicoChat, "CMD_ENCERRAR:"+userId);
+							sessoes.encerrarConversa(usuarioChat);
+							mqttController.desassinarTopico(topicoChat);
+							System.out.println("Conversa com "+usuarioChat+" encerrada");
+							System.out.println("_______________________________________________");
+						}
+						else{
 							String mensagemChat = "["+userId+"]: "+ texto;
 							mqttController.enviarMensagem(topicoChat, mensagemChat);
 						}

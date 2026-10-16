@@ -19,6 +19,8 @@ public class session {
 	// Gerencia as requisições de participação em grupos
 	private Map<String, String> solicitacoesGrupo;
 	private Map<String, String> conversasAtivas;
+	private Map<String, List<String>> historicoMensagens;
+	private String salaAtivaNaTela; // Conversa atual
 
 	public session() {
 		this.solicitacoesPendentes = new HashSet<>();
@@ -26,13 +28,15 @@ public class session {
 		this.formatter = DateTimeFormatter.ofPattern("MMM dd HH:mm", Locale.ENGLISH);// para o time do log
 		this.solicitacoesGrupo = new HashMap<>();
 		this.conversasAtivas = new HashMap<>();
+		this.historicoMensagens = new HashMap<>();
+		this.salaAtivaNaTela = null;
 
 	}
 
 	public void adicionarSolicitacao(String idSol) {
 		solicitacoesPendentes.add(idSol);
 		System.out.println("\r\n[NOTIFICAÇÃO] Nova solicitação de conversa de: " + idSol);
-		System.out.print("Escolha uma opção: ");
+		System.out.print(">> ");
 	}
 
 	public void removerSolicitacao(String idSol) {
@@ -83,7 +87,7 @@ public class session {
 	public void solicitarParticipacao(String membro, String grupo){
 		solicitacoesGrupo.put(membro,grupo);
 		System.out.println("\r\n[NOTIFICAÇÃO] Nova solicitação de participação ao grupo '"+grupo+"' vindo de "+membro );
-		System.out.print("Escolha uma opção: ");
+		System.out.print(">> ");
 	}
 
 	public void removerSolicitacaoGrupo(String membro){
@@ -115,6 +119,9 @@ public class session {
 	public void adicionarConversa(String utilizador, String topico) {
 		conversasAtivas.put(utilizador, topico);
 	}
+	public void encerrarConversa(String utilizador){
+		conversasAtivas.remove(utilizador);
+	}
 	public String getTopicoConversa(String utilizador) {
 		return conversasAtivas.get(utilizador);
 	}
@@ -126,6 +133,64 @@ public class session {
 		else{
 			for(String user : conversasAtivas.keySet()){
 				System.out.println("- " + user);
+			}
+		}
+	}
+	public void setSalaAtiva(String topico) {
+		this.salaAtivaNaTela = topico;
+	}
+
+	public void encerrarConversaPorTopico(String topico) {
+		String userRemover = null;
+		for (Map.Entry<String, String> entry : conversasAtivas.entrySet()){
+			if (entry.getValue().equals(topico)){
+				userRemover = entry.getKey();
+				break;
+			}
+		}
+		if (userRemover != null) {
+			conversasAtivas.remove(userRemover);
+			if (topico.equals(salaAtivaNaTela)){
+				salaAtivaNaTela = null;
+			}
+		}
+	}
+
+	public void registrarMensagemChat(String topico, String mensagem, String userId) {
+		historicoMensagens.putIfAbsent(topico, new ArrayList<>());
+		historicoMensagens.get(topico).add(mensagem);
+
+		String mensageiro = null;
+		if (mensagem.startsWith("[")){
+			String remetenteMsg = mensagem.substring(1, mensagem.indexOf("]"));
+			if (!remetenteMsg.equals(userId)) {
+				mensageiro = remetenteMsg;
+			}
+		}
+
+		if (mensageiro != null && !conversasAtivas.containsKey(mensageiro)){
+			// Se a menseagem é de outro usuário e a sala não está no sistema
+			// Testar se o User_2 recebe mensagem sem aceitar a sala
+			adicionarConversa(mensageiro, topico);
+		}
+
+		if (topico.equals(salaAtivaNaTela)) {
+			if (!mensagem.startsWith("["+userId+"]")) {
+				System.out.println(mensagem);
+			}
+		}
+		else {
+			if (!mensagem.startsWith("["+userId+"]")) {
+				System.out.print("\r\n[NOTIFICAÇÃO] Nova mensagem recebida\n>> ");
+			}
+		}
+	}
+
+	public void imprimirHistorico(String topico) {
+		List<String> hist = historicoMensagens.get(topico);
+		if (hist != null && !hist.isEmpty()){
+			for (String msg : hist) {
+				System.out.println(msg);
 			}
 		}
 	}

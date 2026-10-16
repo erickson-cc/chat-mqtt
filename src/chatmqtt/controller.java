@@ -67,14 +67,14 @@ public class controller {
 						client.subscribe(topicoSessao);
 
 						System.out.println("\r\n Canal iniciado. O usuário aceitou sua solicitação.\nTópico: "+topicoSessao);
-						System.out.println("Escolha uma opção:");
+						System.out.println(">> ");
 					}
 					else if(payload.startsWith("REJECT:")){
 						String destinatario = payload.split(":")[1];
 						sessoes.registrarLogSolicitacoes("RECUSADO", userId, destinatario, null);
 
 						System.out.println("\r\nAviso. O usuário "+destinatario+" recusou sua solicitação.");
-						System.out.println("Escolha uma opção:");
+						System.out.println(">> ");
 					}
 					// Grupos
 					else if(payload.startsWith("GROUP_REQ:")){
@@ -86,26 +86,38 @@ public class controller {
 					else if(payload.startsWith("GROUP_ACCEPT:")){
 						String grupo = payload.split(":")[1];
 						System.out.println("A sua solicitação para entrar no grupo '" + grupo + "' foi aceita");
-						System.out.println("Escolha uma opção:");
+						System.out.println(">> ");
 					}
 					else if(payload.startsWith("GROUP_REJECT:")){
 						String grupo = payload.split(":")[1];
 						System.out.println("A sua solicitação para entrar no grupo '" + grupo + "' foi rejeitada");
-						System.out.println("Escolha uma opção:");
+						System.out.println(">> ");
 					}
 
 				}
-				else if (topic.contains("_"+userId+"_")&& !topic.endsWith("_Control")){
+				//else if (topic.contains("_"+userId+"_")&& !topic.endsWith("_Control")){
+				else if (!topic.startsWith("USERS/") && !topic.startsWith("GROUPS/") && !topic.endsWith("_Control")){
 					// Não é USERS nem GROUPS nem _Control, logo é chat privado
-					String remetente = payload.split(":")[0];
-
-					if (!remetente.equals(userId)){ // não imprime mensagens que o user enviou
-						System.out.println("\r\nMensagem de " + remetente +":" +payload.substring(remetente.length()+2));
-						System.out.print("Escolha uma opção:");
+					if(payload.startsWith("CMD_ENCERRAR:")){
+						String userEncerrar = payload.split(":")[1];
+						if (!userEncerrar.equals(userId)){
+							sessoes.encerrarConversaPorTopico(topic);
+							client.unsubscribe(topic);
+							System.out.println("\r\nO usuário "+userEncerrar+" encerrou a conversa permanentemente.");
+							System.out.print("Pressione Enter para atualizar a tela");
+						}
 					}
+					else {
+						sessoes.registrarMensagemChat(topic, payload, userId);
+					}
+
+					// String remetente = payload.split(":")[0];
+					// if (!remetente.equals(userId)){ // não imprime mensagens que o user enviou
+					// 	System.out.println("\r\nMensagem de " + remetente +":" +payload.substring(remetente.length()+2));
+					// 	System.out.print(">> "); }
 				}
-			}
-		});
+			} // Fim do messageArrived
+		}); // Fim do Callback
 		System.out.println("Conectando ao broker...");
 		client.connect(connOpts);
 		System.out.println("Conectado com sucesso!");
@@ -113,6 +125,9 @@ public class controller {
 
 	public void assinarTopico(String topico) throws MqttException {
 		client.subscribe(topico);
+	}
+	public void desassinarTopico(String topico) throws MqttException {
+		client.unsubscribe(topico);
 	}
 
 	public void publicarStatus(String status) throws MqttException {
