@@ -2,6 +2,7 @@ package chatmqtt;
 
 import java.util.Scanner;
 import org.eclipse.paho.client.mqttv3.MqttException;
+import java.util.Set;
 
 public class menu {
 	private Scanner scanner;
@@ -180,6 +181,7 @@ public class menu {
 		System.out.println("2. Criar novo grupo");
 		System.out.println("3. Solicitar entrada num grupo");
 		System.out.println("4. Gerenciar pedidos de entrada");
+		System.out.println("5. Sair de um grupo");
 		System.out.println("0. Voltar");
 		System.out.print("Escolha: ");
 
@@ -244,6 +246,46 @@ public class menu {
 					}
 				}
 
+			}
+			else if (sub.equals("5")) {
+				System.out.print("Digite o nome do grupo que deseja sair: ");
+				String nomeGrupo = scanner.nextLine();
+
+				if(!gerenciadorGrupos.esseGrupoExiste(nomeGrupo)){
+					System.out.println("Esse Grupo não existe");
+				}
+				else{
+					String liderId = gerenciadorGrupos.retornaLider(nomeGrupo);
+					Set<String> membros = gerenciadorGrupos.listarMembros(nomeGrupo);
+
+					if (userId.equals(liderId)){
+						System.out.println("Você é o líder do grupo e se sair o grupo será removido. Deseja apagar o grupo permanentemente?");
+						System.out.print("Confirmar (S/N): ");
+						String acao = scanner.nextLine().toUpperCase();
+
+						if(acao.equals("S")){
+							for (String membro : membros) {
+								//Loop para descadastrar membros
+								mqttController.removerMensagemRetida("GROUPS/"+nomeGrupo+"/"+membro);
+								 }
+							mqttController.removerMensagemRetida("GROUPS/"+nomeGrupo+"/"+userId);
+							System.out.println("Grupo '"+nomeGrupo+"' eliminado com sucesso.");
+						}
+						else if(acao.equals("N")){
+							System.out.println("Você permanece no grupo");
+						}
+						else{
+							System.out.println("Você permanece no grupo");
+						}
+					}
+					else if (membros.contains(userId)) {
+						mqttController.removerMensagemRetida("GROUPS/"+nomeGrupo+"/"+userId);
+						System.out.println("Você saiu do grupo '"+nomeGrupo+"' com sucesso");
+					}
+					else {
+						System.out.println("Você não faz parte desse grupo");
+					}
+				}
 			}
 			//else if (sub.equals("0")){
 			//}

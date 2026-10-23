@@ -156,4 +156,11 @@ public class controller {
 		client.publish(topicoDestino,msg);
 	}
 
+	public void removerMensagemRetida(String topicoDestino) throws MqttException{
+		MqttMessage msg = new MqttMessage(new byte[0]); // Mensagem vazia
+		msg.setQos(1);
+		msg.setRetained(true);
+		client.publish(topicoDestino, msg);
+	}
+
 }
